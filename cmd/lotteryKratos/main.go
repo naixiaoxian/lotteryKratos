@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"lotteryKratos/internal/conf"
+	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
@@ -12,12 +12,14 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	etcdclient "go.etcd.io/etcd/client/v3"
+	"lotteryKratos/internal/conf"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
 var (
 	// Name is the name of the compiled software.
-	Name string
+	Name = "lotteryKratos"
 	// Version is the version of the compiled software.
 	Version string
 	// flagconf is the config flag.
@@ -31,6 +33,13 @@ func init() {
 }
 
 func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
+	client, err := etcdclient.New(etcdclient.Config{
+		Endpoints: []string{"127.0.0.1:2379"},
+	})
+	r := etcd.New(client)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -41,6 +50,7 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
 			hs,
 			gs,
 		),
+		kratos.Registrar(r),
 	)
 }
 
