@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package api.activity.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "lotteryKratos/api/activity/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.activity.v1";
+
+
+service activity {
+	rpc CreateActivity (CreateActivityRequest) returns (CreateActivityReply){
+		option (google.api.http) = {
+			post: "/v1/activity"
+			body: "*"
+		};
+	};
+	rpc UpdateActivity (UpdateActivityRequest) returns (UpdateActivityReply){
+		option (google.api.http) = {
+			put: "/v1/activity/{id}"
+			body: "*"
+		};
+	};
+	rpc DeleteActivity (DeleteActivityRequest) returns (DeleteActivityReply){
+		option (google.api.http) = {
+			delete: "/v1/activity/{id}"
+		};
+	};
+	rpc GetActivity (GetActivityRequest) returns (GetActivityReply){
+		option (google.api.http) = {
+			get: "/v1/activity/{id}"
+		};
+	};
+
+	rpc ListActivity (ListActivityRequest) returns (ListActivityReply){
+		option (google.api.http) = {
+			get: "/v1/activity/List"
+		};
+	};
+}
+
+message Activity{
+	string activityName = 1;
+	string activityDesc = 2;
+	string beginDateTime = 3;
+	string endDateTime = 4;
+	int32 stockCount = 5;
+	int32 takeCount = 6;
+	int32 state = 7;
+	string creator = 8;
+	string createTime = 9;
+	string updateTime = 10;
+}
+
+message CreateActivityRequest {
+	string activityName = 1;
+	string activityDesc = 2;
+	string beginDateTime = 3;
+	string endDateTime = 4;
+	int32 stockCount = 5;
+	int32 takeCount = 6;
+	int32 state = 7;
+	string creator = 8;
+	string createTime = 9;
+	string updateTime = 10;
+}
+message CreateActivityReply {
+		Activity activity = 1;
+}
+
+message UpdateActivityRequest {
+	int64 id = 1;
+	string activityName = 2;
+	string activityDesc = 3;
+	string beginDateTime = 4;
+	string endDateTime = 5;
+	int32 stockCount = 6;
+	int32 takeCount = 7;
+	int32 state = 8;
+	string creator = 9;
+	string createTime = 10;
+	string updateTime = 11;
+}
+message UpdateActivityReply {
+	Activity activity = 1;
+}
+
+message DeleteActivityRequest {
+	int64 id = 1;
+}
+message DeleteActivityReply {
+	bool success = 1;
+}
+
+message GetActivityRequest {
+	int64 id = 1;
+}
+message GetActivityReply {
+	Activity activity = 1;
+}
+
+message ListActivityRequest {}
+message ListActivityReply {
+	repeated 	Activity activity = 1;
+}
