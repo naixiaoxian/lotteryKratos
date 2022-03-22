@@ -22,7 +22,7 @@ type Activity struct {
 }
 
 //TODO 这个方法有点问题。需要重新返回一个逻辑
-func (*Activity) ConvertFrom(model gormModel.ActivityModel) (ac *Activity) {
+func (*Activity) ConvertFrom(model gormModel.Activity) (ac *Activity) {
 	ac.ID = model.Id
 	ac.Name = model.ActivityName
 	ac.Desc = model.ActivityDesc

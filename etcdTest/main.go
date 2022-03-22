@@ -33,7 +33,7 @@ func main() {
 	defer connGRPC.Close()
 	callGRPCActivity(connGRPC)
 	for {
-		//callGRPC(connGRPC)
+		callGRPC(connGRPC)
 		time.Sleep(time.Second)
 	}
 }

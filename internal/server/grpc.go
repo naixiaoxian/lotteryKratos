@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	activity "lotteryKratos/api/activity/v1"
@@ -31,10 +32,11 @@ func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, logger log.L
 	return srv
 }
 
-func NewGRPCActivityServer(c *conf.Server, greeter *service.ActivityService, logger log.Logger) *grpc.Server {
+func NewGRPCActivityServer(c *conf.Server, greeter *service.ActivityService, greet *service.GreeterService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
+			logging.Server(logger),
 		),
 	}
 	if c.Grpc.Network != "" {
@@ -48,5 +50,6 @@ func NewGRPCActivityServer(c *conf.Server, greeter *service.ActivityService, log
 	}
 	srv := grpc.NewServer(opts...)
 	activity.RegisterActivityServer(srv, greeter)
+	v1.RegisterGreeterServer(srv, greet)
 	return srv
 }

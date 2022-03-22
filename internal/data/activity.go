@@ -26,12 +26,12 @@ func (ar *activityRepo) List(ctx context.Context) (rv []*biz.Activity, err error
 	fmt.Println(ctx)
 	//对应的query 查询方法与对应方式需要新增一个activityQuery类 去解决相关查询的问题
 	//这个查询需要重新写在activity query 方法中
-	activityDB := ar.data.db.Model(&gormModel.ActivityModel{})
+	activityDB := ar.data.Db.Model(&gormModel.Activity{})
 	var count int64
 	activityDB.Count(&count)
 	page := 1
 	pageSize := 5
-	var activityList []gormModel.ActivityModel
+	var activityList []gormModel.Activity
 	err = activityDB.Offset((page - 1) * pageSize).Limit(pageSize).Find(&activityList).Error
 	if err != nil {
 		return
@@ -46,9 +46,9 @@ func (ar *activityRepo) List(ctx context.Context) (rv []*biz.Activity, err error
 func (ar *activityRepo) Get(ctx context.Context, id int64) (rv *biz.Activity, err error) {
 	fmt.Println(ctx)
 	fmt.Println("get", id)
-	var activity gormModel.ActivityModel
-	//err = ar.data.db.First(&activity, id).Error
-	err = ar.data.db.Where("id = ?", id).First(&activity).Error
+	var activity gormModel.Activity
+	//err = ar.data.Db.First(&activity, id).Error
+	err = ar.data.Db.Where("id = ?", id).First(&activity).Error
 	fmt.Println(activity)
 	//rc :=
 	//rv.ConvertFrom(activity)
@@ -73,7 +73,7 @@ func (ar *activityRepo) Get(ctx context.Context, id int64) (rv *biz.Activity, er
 
 func (ar *activityRepo) Create(ctx context.Context, article *biz.Activity) (rv *biz.Activity, err error) {
 	fmt.Println(ctx)
-	model := gormModel.ActivityModel{
+	model := gormModel.Activity{
 		ActivityName:  article.Name,
 		ActivityDesc:  article.Desc,
 		BeginDateTime: article.BeginDateTime,
@@ -85,7 +85,7 @@ func (ar *activityRepo) Create(ctx context.Context, article *biz.Activity) (rv *
 		CreateTime:    time.Now(),
 		UpdateTime:    time.Now(),
 	}
-	err = ar.data.db.Create(&model).Error
+	err = ar.data.Db.Create(&model).Error
 	rv = article.ConvertFrom(model)
 	return
 }
@@ -98,7 +98,7 @@ func (ar *activityRepo) Update(ctx context.Context, id int64, article *biz.Activ
 func (ar *activityRepo) Delete(ctx context.Context, id int64) (err error) {
 	//todo 注意page 跟pagesize 的分页
 	fmt.Println(ctx)
-	err = ar.data.db.Where("id = ?", id).Delete(&gormModel.ActivityModel{}).Error
+	err = ar.data.Db.Where("id = ?", id).Delete(&gormModel.Activity{}).Error
 	return
 }
 

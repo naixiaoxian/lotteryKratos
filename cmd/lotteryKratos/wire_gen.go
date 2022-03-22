@@ -31,7 +31,7 @@ func initApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	activityRepoImpl := data.NewActivityRepo(dataData, logger)
 	activityDomain := biz.NewActivityDomain(activityRepoImpl, logger)
 	activityService := service.NewActivityService(activityDomain, logger)
-	grpcServer := server.NewGRPCActivityServer(confServer, activityService, logger)
+	grpcServer := server.NewGRPCActivityServer(confServer, activityService, greeterService, logger)
 	app := newApp(logger, httpServer, grpcServer)
 	return app, func() {
 		cleanup()

@@ -17,7 +17,7 @@ var ProviderSet = wire.NewSet(NewData, NewGreeterRepo, NewActivityRepo)
 // Data .
 type Data struct {
 	// TODO wrapped database client
-	db *gorm.DB
+	Db *gorm.DB
 }
 
 // NewData .
@@ -32,7 +32,7 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	d := &Data{db: db}
+	d := &Data{Db: db}
 	fmt.Println("data init success")
 	return d, cleanup, nil
 }

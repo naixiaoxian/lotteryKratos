@@ -2,7 +2,7 @@ package gormModel
 
 import "time"
 
-type ActivityModel struct {
+type Activity struct {
 	Id            int64
 	ActivityName  string
 	ActivityDesc  string
@@ -16,6 +16,6 @@ type ActivityModel struct {
 	UpdateTime    time.Time
 }
 
-func (*ActivityModel) TableName() string {
+func (*Activity) TableName() string {
 	return "activity"
 }
