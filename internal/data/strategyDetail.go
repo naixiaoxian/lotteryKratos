@@ -2,7 +2,7 @@ package data
 
 import (
 	"github.com/go-kratos/kratos/v2/log"
-	"lotteryKratos/internal/biz/draw"
+	"lotteryKratos/internal/biz/strategy/draw"
 	"lotteryKratos/internal/data/gormModel"
 	"lotteryKratos/internal/data/strategy/aggregates"
 	"lotteryKratos/internal/data/strategy/vo"
@@ -21,18 +21,18 @@ func NewStrategyRepo(data *Data, logger log.Logger) draw.StrategyRepoImpl {
 }
 
 func (sr *strategyRepo) QueryExcludeAwardIds(id int64) (strategyDetails []gormModel.StrategyDetail) {
-	sr.data.Db.Where("strategyId = ? ", id).Where("awardSurplusCount = ? ", 0).Find(&strategyDetails)
+	sr.data.Db.Where("strategy_id = ? ", id).Where("award_surplus_count = ? ", 0).Find(&strategyDetails)
 	return
 }
 
 func (sr *strategyRepo) DeductStock(strategyId int64, awardId int64) (err error) {
 	var strategyDetail gormModel.StrategyDetail
-	err = sr.data.Db.Where("strategyId = ?", strategyId).Where("awardId = ? ", awardId).First(&strategyDetail).Error
+	err = sr.data.Db.Where("strategy_id = ?", strategyId).Where("award_id = ? ", awardId).First(&strategyDetail).Error
 	if err != nil {
 		return
 	}
 	//高并发情况下会出现问题。需要dbstatement
-	err = sr.data.Db.Exec("UPDATE strategy_detail SET awardSurplusCount = awardSurplusCount - 1 WHERE id = ?", strategyDetail.Id).Error
+	err = sr.data.Db.Exec("UPDATE strategy_detail SET award_surplus_count = award_surplus_count - 1 WHERE id = ?", strategyDetail.Id).Error
 	return
 }
 
@@ -47,11 +47,11 @@ func (sr *strategyRepo) QueryAwardInfoByAwardId(awardId int64) (ret gormModel.Aw
 func (sr *strategyRepo) QueryStrategyRich(strategyId int64) (ret aggregates.StrategyRich, err error) {
 	var sModel gormModel.Strategy
 	var details []gormModel.StrategyDetail
-	err = sr.data.Db.Where("id = ?", strategyId).First(&sModel).Error
+	err = sr.data.Db.Where("strategy_id = ?", strategyId).First(&sModel).Error
 	if err != nil {
 		return
 	}
-	err = sr.data.Db.Where("strategyId = ?", strategyId).Find(&details).Error
+	err = sr.data.Db.Where("strategy_id = ?", strategyId).Find(&details).Error
 	if err != nil {
 		return
 	}
@@ -68,7 +68,7 @@ func (sr *strategyRepo) QueryStrategyRich(strategyId int64) (ret aggregates.Stra
 		rate, _ := strategyDetail.AwardRate.Float64()
 		detailVo := vo.StrategyDetailBriefVO{
 			StrategyId:        strategyDetail.StrategyId,
-			AwardId:           string(strategyDetail.AwardId),
+			AwardId:           string(rune(strategyDetail.AwardId)),
 			AwardName:         strategyDetail.AwardDesc,
 			AwardCount:        strategyDetail.AwardCount,
 			AwardSurplusCount: strategyDetail.AwardCount,

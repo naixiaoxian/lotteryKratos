@@ -3,7 +3,7 @@ package draw
 import (
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
-	"lotteryKratos/internal/biz/algorithm"
+	algorithm2 "lotteryKratos/internal/biz/strategy/algorithm"
 	"lotteryKratos/internal/data/gormModel"
 	"lotteryKratos/internal/data/strategy/aggregates"
 	"lotteryKratos/internal/data/strategy/req"
@@ -29,19 +29,19 @@ type StrategyRepoImpl interface {
 	QueryStrategyRich(id int64) (aggregates.StrategyRich, error)
 }
 type DrawBase struct {
-	rep        StrategyRepoImpl
-	log        *log.Helper
-	singleDraw algorithm.SingleRateRandomDrawAlgorithm
-	entireDraw algorithm.EntiretyRateRandomDrawAlgorithm
+	rep StrategyRepoImpl
+	log *log.Helper
+	singleDraw algorithm2.SingleRateRandomDrawAlgorithm
+	entireDraw algorithm2.EntiretyRateRandomDrawAlgorithm
 }
 
 func NewDraBaseDomain(repo StrategyRepoImpl, logger log.Logger,
-	singleDraw algorithm.SingleRateRandomDrawAlgorithm,
-	entireDraw algorithm.EntiretyRateRandomDrawAlgorithm) *DrawBase {
+	singleDraw algorithm2.SingleRateRandomDrawAlgorithm,
+	entireDraw algorithm2.EntiretyRateRandomDrawAlgorithm) *DrawBase {
 	return &DrawBase{rep: repo, log: log.NewHelper(logger), singleDraw: singleDraw, entireDraw: entireDraw}
 }
 
-func (db *DrawBase) getAlgorithm(mode int) algorithm.DrawImpl {
+func (db *DrawBase) getAlgorithm(mode int) algorithm2.DrawImpl {
 	if mode == 1 {
 		return &db.entireDraw
 	}
@@ -78,7 +78,7 @@ func (db *DrawBase) checkAndInitRateData(strategyId int64, strategyMode int, str
 	algom.InitRateTuple(strategyId, strategyMode, awardRateInfo)
 }
 
-func (db *DrawBase) drawAlgorithm(strategyId int64, drawImpl algorithm.DrawImpl, strategyDetailList []gormModel.StrategyDetail) (awardId string) {
+func (db *DrawBase) drawAlgorithm(strategyId int64, drawImpl algorithm2.DrawImpl, strategyDetailList []gormModel.StrategyDetail) (awardId string) {
 	//strategyRich :=
 	ids := make([]string, 0)
 	for _, strategyDetail := range strategyDetailList {
@@ -131,3 +131,4 @@ func (db *DrawBase) buildDrawResult(uid string, strategyId int64, awardId string
 	}
 
 }
+

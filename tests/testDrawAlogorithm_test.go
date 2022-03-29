@@ -7,10 +7,13 @@ import (
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
-	"lotteryKratos/internal/biz/algorithm"
-	"lotteryKratos/internal/biz/draw"
+	"lotteryKratos/internal/biz/award"
+	"lotteryKratos/internal/biz/award/goods"
+	algorithm2 "lotteryKratos/internal/biz/strategy/algorithm"
+	"lotteryKratos/internal/biz/strategy/draw"
 	"lotteryKratos/internal/conf"
 	"lotteryKratos/internal/data"
+	req2 "lotteryKratos/internal/data/award/req"
 	"lotteryKratos/internal/data/strategy/req"
 	"lotteryKratos/internal/data/strategy/vo"
 	"os"
@@ -43,11 +46,11 @@ func TestDraw(t *testing.T) {
 	rateTupleMap := make(map[int64][]string)
 	awardRateInfoMap := make(map[int64][]vo.AwardRateVo)
 
-	bareps := algorithm.BaseAlgorithm{
+	bareps := algorithm2.BaseAlgorithm{
 		RateTupleMap:     rateTupleMap,
 		AwardRateInfoMap: awardRateInfoMap,
 	}
-	entire := algorithm.EntiretyRateRandomDrawAlgorithm{
+	entire := algorithm2.EntiretyRateRandomDrawAlgorithm{
 		BaseAlgorithm: bareps,
 	}
 	entire.InitRateTuple(100001, 1, voList)
@@ -61,11 +64,11 @@ func TestDraw(t *testing.T) {
 	}
 	rateTupleMap2 := make(map[int64][]string)
 	awardRateInfoMap2 := make(map[int64][]vo.AwardRateVo)
-	bareps2 := algorithm.BaseAlgorithm{
+	bareps2 := algorithm2.BaseAlgorithm{
 		RateTupleMap:     rateTupleMap2,
 		AwardRateInfoMap: awardRateInfoMap2,
 	}
-	singleDraw := algorithm.SingleRateRandomDrawAlgorithm{
+	singleDraw := algorithm2.SingleRateRandomDrawAlgorithm{
 		BaseAlgorithm: bareps2,
 	}
 	awardId2s := []string{
@@ -104,22 +107,22 @@ func TestDraw2(t *testing.T) {
 	rateTupleMap := make(map[int64][]string)
 	awardRateInfoMap := make(map[int64][]vo.AwardRateVo)
 
-	bareps := algorithm.BaseAlgorithm{
+	bareps := algorithm2.BaseAlgorithm{
 		RateTupleMap:     rateTupleMap,
 		AwardRateInfoMap: awardRateInfoMap,
 	}
-	entire := algorithm.EntiretyRateRandomDrawAlgorithm{
+	entire := algorithm2.EntiretyRateRandomDrawAlgorithm{
 		BaseAlgorithm: bareps,
 	}
 	entire.InitRateTuple(10001, 1, voList)
 
 	rateTupleMap2 := make(map[int64][]string)
 	awardRateInfoMap2 := make(map[int64][]vo.AwardRateVo)
-	bareps2 := algorithm.BaseAlgorithm{
+	bareps2 := algorithm2.BaseAlgorithm{
 		RateTupleMap:     rateTupleMap2,
 		AwardRateInfoMap: awardRateInfoMap2,
 	}
-	singleDraw := algorithm.SingleRateRandomDrawAlgorithm{
+	singleDraw := algorithm2.SingleRateRandomDrawAlgorithm{
 		BaseAlgorithm: bareps2,
 	}
 	singleDraw.InitRateTuple(10002, 2, voList)
@@ -152,30 +155,58 @@ func TestDraw2(t *testing.T) {
 	dataData, _, _ := data.NewData(bc.Data, logger)
 	strategyImpl := data.NewStrategyRepo(dataData, logger)
 
-	data := draw.NewDraBaseDomain(strategyImpl, logger, singleDraw, entire)
-	data.DoDrawExec(req.DrawReq{
+	draBaseDomain := draw.NewDraBaseDomain(strategyImpl, logger, singleDraw, entire)
+	draBaseDomain.DoDrawExec(req.DrawReq{
 		UId:        "kd",
 		StrategyId: 10001,
 		Uuid:       "kd1",
 	})
-	data.DoDrawExec(req.DrawReq{
+	draBaseDomain.DoDrawExec(req.DrawReq{
 		UId:        "kd2",
 		StrategyId: 10001,
 		Uuid:       "kd1",
 	})
-	data.DoDrawExec(req.DrawReq{
+	draBaseDomain.DoDrawExec(req.DrawReq{
 		UId:        "kd3",
 		StrategyId: 10001,
 		Uuid:       "kd1",
 	})
-	data.DoDrawExec(req.DrawReq{
+	draBaseDomain.DoDrawExec(req.DrawReq{
 		UId:        "kd4",
 		StrategyId: 10001,
 		Uuid:       "kd1",
 	})
-	data.DoDrawExec(req.DrawReq{
+	drawResult := draBaseDomain.DoDrawExec(req.DrawReq{
 		UId:        "kd5",
 		StrategyId: 10001,
 		Uuid:       "kd1",
 	})
+	// 执行抽奖逻辑
+	// vo.Goo
+	goosReq := &req2.GoodsReq{
+		Uid:          drawResult.Uid,
+		OrderId:      2109313442431,
+		AwardId:      drawResult.DrawAwardInfo.AwardId,
+		AwardName:    drawResult.DrawAwardInfo.AwardName,
+		AwardContent: drawResult.DrawAwardInfo.AwardContent,
+		ExtInfo:      "",
+	}
+	//
+	db := data.NewOrderRep(dataData, logger)
+	database := &goods.DistributionBase{Impl: db}
+	couponGoods := &goods.CouponGoods{DB: database}
+	physicalGoods := &goods.PhysicalGoods{DB: database}
+	redeeGoods := &goods.RedeemCodeGoods{DB: database}
+	descGoods := &goods.DescGoods{DB: database}
+
+	AWARD := award.NewGoodsConfig(couponGoods, descGoods, physicalGoods, redeeGoods)
+	igoods := AWARD.GetDistributionGoodsService(drawResult.DrawAwardInfo.AwardType)
+	distributions := igoods.DoDistribution(*goosReq)
+	fmt.Println(distributions)
+	//loxgger
+	// 根asdf据抽奖逻辑发奖
+	//award.NewGoodsConfig(&goods.CouponGoods{},
+	//&goods.DescGoods{},
+	//&goods.PhysicalGoods{},
+	//&goods.RedeemCodeGoods{})
 }
