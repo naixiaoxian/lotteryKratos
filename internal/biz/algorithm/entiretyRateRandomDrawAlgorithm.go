@@ -25,7 +25,7 @@ func (ba *EntiretyRateRandomDrawAlgorithm) RandomDraw(strategyId int64, excludeA
 	//前置判断:奖品列表为0，返回null
 
 	if len(differentAwardRateList) == 0 {
-		return ""
+		return "未中奖"
 	}
 
 	if len(differentAwardRateList) == 1 {

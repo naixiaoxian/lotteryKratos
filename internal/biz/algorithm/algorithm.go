@@ -2,7 +2,6 @@ package algorithm
 
 import (
 	"fmt"
-	"lotteryKratos/internal/data"
 	"lotteryKratos/internal/data/strategy/vo"
 )
 
@@ -60,7 +59,8 @@ func (ba *BaseAlgorithm) initRateTuple(strategyId int64, strategyMode int, award
 	ba.AwardRateInfoMap[strategyId] = awardRateInfoList
 
 	//非单向概率，不必存入缓存，因为这部分抽奖算法需要实时处理中奖概率
-	if strategyMode == data.SINGLE {
+	if strategyMode == 1 {
+		//data.single
 		return
 	}
 

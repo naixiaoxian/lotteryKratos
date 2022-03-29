@@ -19,13 +19,13 @@ func (ba *SingleRateRandomDrawAlgorithm) RandomDraw(strategyId int64, excludeAwa
 	ret = rateTuple[idx]
 
 	if IsExistInArray(ret, excludeAwardIds) {
-		ret = ""
+		ret = "未中奖"
 	}
 	return
 }
 
 func (ba *SingleRateRandomDrawAlgorithm) IsExist(strategyId int64) bool {
-	return ba.BaseAlgorithm.isExist(int64(strategyId))
+	return ba.BaseAlgorithm.isExist(strategyId)
 }
 
 func (ba *SingleRateRandomDrawAlgorithm) InitRateTuple(strategyId int64, strategyMode int, awardRateInfoList []vo.AwardRateVo) {

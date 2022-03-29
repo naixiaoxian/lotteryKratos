@@ -1,9 +1,9 @@
 package draw
 
 import (
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"lotteryKratos/internal/biz/algorithm"
-	"lotteryKratos/internal/data"
 	"lotteryKratos/internal/data/gormModel"
 	"lotteryKratos/internal/data/strategy/aggregates"
 	"lotteryKratos/internal/data/strategy/req"
@@ -21,11 +21,24 @@ type IDrawExec interface {
 //	//algorithmGroup :=
 //}
 
+type StrategyRepoImpl interface {
+	QueryExcludeAwardIds(id int64) []gormModel.StrategyDetail
+	DeductStock(strategyId int64, awardId int64) error
+	QueryAwardInfoByAwardId(id int64) (gormModel.Award, error)
+	//获取rich聚合根
+	QueryStrategyRich(id int64) (aggregates.StrategyRich, error)
+}
 type DrawBase struct {
-	rep        data.StrategyRepoImpl
-	log        log.Helper
+	rep        StrategyRepoImpl
+	log        *log.Helper
 	singleDraw algorithm.SingleRateRandomDrawAlgorithm
 	entireDraw algorithm.EntiretyRateRandomDrawAlgorithm
+}
+
+func NewDraBaseDomain(repo StrategyRepoImpl, logger log.Logger,
+	singleDraw algorithm.SingleRateRandomDrawAlgorithm,
+	entireDraw algorithm.EntiretyRateRandomDrawAlgorithm) *DrawBase {
+	return &DrawBase{rep: repo, log: log.NewHelper(logger), singleDraw: singleDraw, entireDraw: entireDraw}
 }
 
 func (db *DrawBase) getAlgorithm(mode int) algorithm.DrawImpl {
@@ -35,15 +48,17 @@ func (db *DrawBase) getAlgorithm(mode int) algorithm.DrawImpl {
 	return &db.singleDraw
 }
 
-func (db *DrawBase) doDrawExec(req req.DrawReq) (ret *res.DrawResult) {
-	stragetyRich := aggregates.StrategyRich{}
+func (db *DrawBase) DoDrawExec(req req.DrawReq) (ret *res.DrawResult) {
+	//获取策略模式
+	stragetyRich, _ := db.rep.QueryStrategyRich(req.StrategyId)
 	strategyBrief := stragetyRich.StrategyBriefVo
 	db.checkAndInitRateData(req.StrategyId, strategyBrief.StrategyMode, stragetyRich.StrategyDetails)
 	//抽奖算法
-	exludeAwardIds := db.queryExcludeAwardIds(req.StrategyId)
+	exludeAwardIds := db.rep.QueryExcludeAwardIds(req.StrategyId)
+	fmt.Println("ExecAwardIDs", exludeAwardIds)
 	//包装中奖结果
 	awardId := db.drawAlgorithm(req.StrategyId, &db.entireDraw, exludeAwardIds)
-
+	fmt.Println("finaldrawAlgo", awardId)
 	return db.buildDrawResult(req.UId, req.StrategyId, awardId, strategyBrief)
 }
 
@@ -67,25 +82,26 @@ func (db *DrawBase) drawAlgorithm(strategyId int64, drawImpl algorithm.DrawImpl,
 	//strategyRich :=
 	ids := make([]string, 0)
 	for _, strategyDetail := range strategyDetailList {
-		ids = append(ids, string(strategyDetail.AwardId))
+		ids = append(ids, strconv.Itoa(strategyDetail.AwardId))
 	}
 	awardId = drawImpl.RandomDraw(strategyId, ids)
-	return
+	//return
+	if "" == awardId || "未中奖" == awardId {
+		awardId = ""
+		return
+	}
+	isSuccess := db.deductStock(strategyId, awardId)
+	return isSuccess
 	//扣减库存
 
 }
 
-func (db *DrawBase) queryExcludeAwardIds(id int64) []gormModel.StrategyDetail {
-	//返回没有库存的奖品id
-	//gorm 返回strategyDetail 中对应的wardIds
-	return db.rep.QueryExcludeAwardIds(id)
-}
-
-func (db *DrawBase) deductStock(strategyId int32, awardId string) (ret string) {
+func (db *DrawBase) deductStock(strategyId int64, awardId string) (ret string) {
 	id, _ := strconv.Atoi(awardId)
 	awardid := int64(id)
 	//return
-	if db.rep.DeductStock(int64(strategyId), awardid) != nil {
+	rets := db.rep.DeductStock(strategyId, awardid)
+	if rets == nil {
 		ret = awardId
 		return
 	}
@@ -99,17 +115,18 @@ func (db *DrawBase) buildDrawResult(uid string, strategyId int64, awardId string
 		return &res.DrawResult{
 			Uid:        uid,
 			StrategyId: strategyId,
-			DrawResult: data.FAIL,
+			DrawResult: 0, //data.fail
 		}
 	}
 	awardid, _ := strconv.Atoi(awardId)
 	award, _ := db.rep.QueryAwardInfoByAwardId(int64(awardid))
 	awardStr := strconv.Itoa(int(award.AwardId))
 	drawAward := vo.NewDrawAwardVo(uid, awardStr, award.AwardType, award.AwardName, award.AwardContent, strategy.StrategyMode, strategy.GrantType, strategy.GrandDate)
+	db.log.Infof("执行策略抽奖完成【中奖】 用户: %v, 策略id: %v 奖品：%v ,id %v", uid, strategyId, drawAward, awardid)
 	return &res.DrawResult{
 		Uid:           uid,
 		StrategyId:    strategyId,
-		DrawResult:    data.SUCESS,
+		DrawResult:    1, //data.success
 		DrawAwardInfo: *drawAward,
 	}
 

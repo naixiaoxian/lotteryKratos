@@ -8,4 +8,4 @@ const ENTIRETY = 2
 
 const FAIL = 0
 
-const SUCESS = 0
+const SUCESS = 1
