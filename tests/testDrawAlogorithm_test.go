@@ -156,26 +156,6 @@ func TestDraw2(t *testing.T) {
 	strategyImpl := data.NewStrategyRepo(dataData, logger)
 
 	draBaseDomain := draw.NewDraBaseDomain(strategyImpl, logger, singleDraw, entire)
-	draBaseDomain.DoDrawExec(req.DrawReq{
-		UId:        "kd",
-		StrategyId: 10001,
-		Uuid:       "kd1",
-	})
-	draBaseDomain.DoDrawExec(req.DrawReq{
-		UId:        "kd2",
-		StrategyId: 10001,
-		Uuid:       "kd1",
-	})
-	draBaseDomain.DoDrawExec(req.DrawReq{
-		UId:        "kd3",
-		StrategyId: 10001,
-		Uuid:       "kd1",
-	})
-	draBaseDomain.DoDrawExec(req.DrawReq{
-		UId:        "kd4",
-		StrategyId: 10001,
-		Uuid:       "kd1",
-	})
 	drawResult := draBaseDomain.DoDrawExec(req.DrawReq{
 		UId:        "kd5",
 		StrategyId: 10001,
@@ -203,10 +183,4 @@ func TestDraw2(t *testing.T) {
 	igoods := AWARD.GetDistributionGoodsService(drawResult.DrawAwardInfo.AwardType)
 	distributions := igoods.DoDistribution(*goosReq)
 	fmt.Println(distributions)
-	//loxgger
-	// 根asdf据抽奖逻辑发奖
-	//award.NewGoodsConfig(&goods.CouponGoods{},
-	//&goods.DescGoods{},
-	//&goods.PhysicalGoods{},
-	//&goods.RedeemCodeGoods{})
 }

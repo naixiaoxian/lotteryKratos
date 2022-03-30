@@ -58,7 +58,6 @@ func (db *DrawBase) DoDrawExec(req req.DrawReq) (ret *res.DrawResult) {
 	fmt.Println("ExecAwardIDs", exludeAwardIds)
 	//包装中奖结果
 	awardId := db.drawAlgorithm(req.StrategyId, &db.entireDraw, exludeAwardIds)
-	fmt.Println("finaldrawAlgo", awardId)
 	return db.buildDrawResult(req.UId, req.StrategyId, awardId, strategyBrief)
 }
 
