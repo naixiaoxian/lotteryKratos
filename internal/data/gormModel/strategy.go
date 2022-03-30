@@ -9,7 +9,7 @@ type Strategy struct {
 	StrategyMode int       `gorm:"Column:strategy_mode;type:int"`
 	GrantType    int       `gorm:"Column:grant_type;type:int"`
 	GrantDate    time.Time `gorm:"Column:grant_date;type:datetime"`
-	ExtraInfo    string    `gorm:"Column:extra_info;type:varchar(128)"`
+	ExtInfo      string    `gorm:"Column:ext_info;type:varchar(128)"`
 	CreateTime   time.Time `gorm:"Column:create_time;type:datetime"`
 	UpdateTime   time.Time `gorm:"Column:update_time;type:datetime"`
 }

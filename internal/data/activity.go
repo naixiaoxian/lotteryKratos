@@ -58,9 +58,9 @@ func (ar *activityRepo) Get(ctx context.Context, id int64) (rv *biz.Activity, er
 		Desc:          activity.ActivityDesc,
 		BeginDateTime: activity.BeginDateTime,
 		EndDateTime:   activity.EndDateTime,
-		StockCount:    activity.StockCount,
-		TakeCount:     activity.TakeCount,
-		State:         activity.State,
+		StockCount:    int32(activity.StockCount),
+		TakeCount:     int32(activity.TakeCount),
+		State:         int32(activity.State),
 		Creator:       activity.Creator,
 		CreateTime:    activity.CreateTime,
 		UpdateTime:    activity.UpdateTime,
@@ -78,7 +78,7 @@ func (ar *activityRepo) Create(ctx context.Context, article *biz.Activity) (rv *
 		ActivityDesc:  article.Desc,
 		BeginDateTime: article.BeginDateTime,
 		EndDateTime:   article.EndDateTime,
-		StockCount:    article.StockCount,
+		StockCount:    int(article.StockCount),
 		TakeCount:     0,
 		State:         0,
 		Creator:       article.Creator,
@@ -101,11 +101,3 @@ func (ar *activityRepo) Delete(ctx context.Context, id int64) (err error) {
 	err = ar.data.Db.Where("id = ?", id).Delete(&gormModel.Activity{}).Error
 	return
 }
-
-//type ActivityRepoImpl interface {
-//	List(ctx context.Context) ([]*Activity, error)
-//	Get(ctx context.Context, id int64) (*Activity, error)
-//	Create(ctx context.Context, article *Activity) (*Activity, error)
-//	Update(ctx context.Context, id int64, article *Activity) (*Activity, error)
-//	Delete(ctx context.Context, id int64) error
-//}

@@ -5,7 +5,7 @@ import "time"
 // ActivityBillVO 活动账单【库存、状态、日期、个人参与次数】
 type ActivityVO struct {
 	Id                int64
-	ActivityId        int64
+	ActivityId        int
 	ActivityName      string
 	ActivityDesc      string
 	BeginDateTime     time.Time

@@ -1,17 +1,16 @@
 package vo
 
 import (
-	"github.com/shopspring/decimal"
 	"lotteryKratos/internal/data/award/vo"
 )
 
 type StrategyDetailVO struct {
-	StrategyId        string
-	AwardId           int64
+	StrategyId        int64
+	AwardId           int
 	AwardName         string
 	AwardCount        int
-	AwardSurplusCount string
-	AwardRate         decimal.Decimal
+	AwardSurplusCount int
+	AwardRate         float32
 	ShippingAddress   vo.ShippingAddress
 	ExtInfo           string
 }

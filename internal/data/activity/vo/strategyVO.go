@@ -3,7 +3,7 @@ package vo
 import "time"
 
 type StrategyVO struct {
-	StrategyId   string
+	StrategyId   int64
 	StrategyDesc string
 	StrategyMode int
 	GrantType    int

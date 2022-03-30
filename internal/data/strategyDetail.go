@@ -61,18 +61,17 @@ func (sr *strategyRepo) QueryStrategyRich(strategyId int64) (ret aggregates.Stra
 		StrategyMode: sModel.StrategyMode,
 		GrantType:    sModel.GrantType,
 		GrandDate:    sModel.GrantDate,
-		ExtInfo:      sModel.ExtraInfo,
+		ExtInfo:      sModel.ExtInfo,
 	}
 	detailVoList := make([]vo.StrategyDetailBriefVO, 0)
 	for _, strategyDetail := range details {
-		rate, _ := strategyDetail.AwardRate.Float64()
 		detailVo := vo.StrategyDetailBriefVO{
 			StrategyId:        strategyDetail.StrategyId,
 			AwardId:           string(rune(strategyDetail.AwardId)),
-			AwardName:         strategyDetail.AwardDesc,
+			AwardName:         strategyDetail.AwardName,
 			AwardCount:        strategyDetail.AwardCount,
-			AwardSurplusCount: strategyDetail.AwardCount,
-			AwardRate:         float32(rate),
+			AwardSurplusCount: strategyDetail.AwardSurplusCount,
+			AwardRate:         strategyDetail.AwardRate,
 		}
 		detailVoList = append(detailVoList, detailVo)
 	}

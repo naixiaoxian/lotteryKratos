@@ -28,9 +28,9 @@ func (*Activity) ConvertFrom(model gormModel.Activity) (ac *Activity) {
 	ac.Desc = model.ActivityDesc
 	ac.BeginDateTime = model.BeginDateTime
 	ac.EndDateTime = model.EndDateTime
-	ac.StockCount = model.StockCount
-	ac.TakeCount = model.TakeCount
-	ac.State = model.State
+	ac.StockCount = int32(model.StockCount)
+	ac.TakeCount = int32(model.TakeCount)
+	ac.State = int32(model.State)
 	ac.Creator = model.Creator
 	ac.CreateTime = model.CreateTime
 	ac.UpdateTime = model.UpdateTime
