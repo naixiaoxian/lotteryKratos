@@ -1,6 +1,6 @@
 package res
 
 type StockResult struct {
-	StockKey    string
-	StockResult int
+	StockKey          string
+	StockSurplusCount int
 }

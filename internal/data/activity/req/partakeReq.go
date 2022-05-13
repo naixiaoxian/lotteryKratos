@@ -4,6 +4,6 @@ import "time"
 
 type PartakeReq struct {
 	Uid         string
-	ActivityId  int32
-	PartakeData time.Time
+	ActivityId  int64
+	PartakeDate time.Time
 }

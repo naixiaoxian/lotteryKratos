@@ -2,7 +2,7 @@ package vo
 
 import "time"
 
-type drawOrderVO struct {
+type DrawOrderVO struct {
 	UId          string
 	TakeId       int64
 	ActivityId   int64

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lotteryKratos/internal/data/activity/aggregates"
 	"lotteryKratos/internal/data/activity/req"
+	"lotteryKratos/internal/data/activity/res"
 	"lotteryKratos/internal/data/activity/vo"
 )
 
@@ -28,7 +29,7 @@ type IActivityRepImpl interface {
 	QueryActivityBill(req req.PartakeReq) vo.ActivityBillVO
 	SubtractionActivityStock(activityId int64) int
 	ScanToDoActivityList(id int64) []vo.ActivityVO
-	SubtractionActivityStockByRedis(uid string, activityId int64, stockCount int)
+	SubtractionActivityStockByRedis(uid string, activityId int64, stockCount int) res.StockResult
 	RecoverActivityCacheStockByRedis(activityId int64, tokenKey string, code string)
 	QueryActivityInfoLimitPage(req req.ActivityINfoLimitPageReq) aggregates.ActivityInfoLimitPageRich
 }

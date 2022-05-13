@@ -6,6 +6,7 @@ import (
 	"lotteryKratos/internal/biz/activity"
 	"lotteryKratos/internal/data/activity/aggregates"
 	"lotteryKratos/internal/data/activity/req"
+	"lotteryKratos/internal/data/activity/res"
 	"lotteryKratos/internal/data/activity/vo"
 	"lotteryKratos/internal/data/gormModel"
 	"strconv"
@@ -121,9 +122,7 @@ func (d *DeployRep) AddStrategyDetailList(strategyDetailList []vo.StrategyDetail
 
 func (d *DeployRep) AlterStatus(activityID int64, beforeState int, afterState int) (ret bool) {
 	var activitya gormModel.Activity
-	d.data.Db.Where("id = ? ", activityID).Where("state = ? ", beforeState).First(&activitya)
-	activitya.State = afterState
-	count := d.data.Db.Save(activitya).RowsAffected
+	count := d.data.Db.Model(&activitya).Where("activity_id = ? ", activityID).Where("state = ? ", beforeState).Update("state", afterState).RowsAffected
 	ret = 1 == count
 	return
 }
@@ -140,7 +139,7 @@ func (d *DeployRep) ScanToDoActivityList(id int64) (ret []vo.ActivityVO) {
 	return
 }
 
-func (d *DeployRep) SubtractionActivityStockByRedis(uid string, activityId int64, stockCount int) {
+func (d *DeployRep) SubtractionActivityStockByRedis(uid string, activityId int64, stockCount int) (ret res.StockResult) {
 	return
 }
 

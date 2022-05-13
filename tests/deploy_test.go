@@ -2,11 +2,14 @@ package tests
 
 import (
 	"flag"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"lotteryKratos/internal/biz/activity"
+	"lotteryKratos/internal/biz/activity/stateFlow"
+	"lotteryKratos/internal/common"
 	"lotteryKratos/internal/conf"
 	"lotteryKratos/internal/data"
 	"lotteryKratos/internal/data/activity/aggregates"
@@ -18,6 +21,37 @@ import (
 	"time"
 )
 
+var logger log.Logger
+var dataData *data.Data
+
+func init() {
+	var flagconf string
+	flag.StringVar(&flagconf, "conf", "../configs", "config path, eg: -conf config.yaml")
+	c := config.New(
+		config.WithSource(
+			file.NewSource(flagconf),
+		),
+	)
+	defer c.Close()
+
+	if err := c.Load(); err != nil {
+		panic(err)
+	}
+
+	var bc conf.Bootstrap
+	if err := c.Scan(&bc); err != nil {
+		panic(err)
+	}
+
+	logger = log.With(log.NewStdLogger(os.Stdout),
+		"ts", log.DefaultTimestamp,
+		"caller", log.DefaultCaller,
+		"trace_id", tracing.TraceID(),
+		"span_id", tracing.SpanID(),
+	)
+	dataData, _, _ = data.NewData(bc.Data, logger)
+}
+
 func TestDeploy_createActivity(t *testing.T) {
 	activityVo := vo.ActivityVO{
 		ActivityId:        120981321,
@@ -27,7 +61,7 @@ func TestDeploy_createActivity(t *testing.T) {
 		EndDateTime:       time.Now(),
 		StockCount:        100,
 		StockSurplusCount: 100,
-		State:             0,
+		State:             1,
 		StrategyId:        10002,
 		TakeCount:         0,
 		UserTakeLeftCount: 0,
@@ -145,31 +179,6 @@ func TestDeploy_createActivity(t *testing.T) {
 		AwardList: arrList,
 	}
 	//init
-	var flagconf string
-	flag.StringVar(&flagconf, "conf", "../configs", "config path, eg: -conf config.yaml")
-	c := config.New(
-		config.WithSource(
-			file.NewSource(flagconf),
-		),
-	)
-	defer c.Close()
-
-	if err := c.Load(); err != nil {
-		panic(err)
-	}
-
-	var bc conf.Bootstrap
-	if err := c.Scan(&bc); err != nil {
-		panic(err)
-	}
-
-	logger := log.With(log.NewStdLogger(os.Stdout),
-		"ts", log.DefaultTimestamp,
-		"caller", log.DefaultCaller,
-		"trace_id", tracing.TraceID(),
-		"span_id", tracing.SpanID(),
-	)
-	dataData, _, _ := data.NewData(bc.Data, logger)
 	deployRep := data.NewDeployRepo(dataData, logger)
 	deplo := activity.NewDeploy(deployRep)
 	req := &req.ActivityConfigReq{
@@ -177,4 +186,13 @@ func TestDeploy_createActivity(t *testing.T) {
 		ActivityConfigRich: rich,
 	}
 	deplo.CreateActivity(*req)
+}
+
+func TestStateFlow(t *testing.T) {
+	deployRep := data.NewDeployRepo(dataData, logger)
+	stateFlow.InitGroups(deployRep)
+	fmt.Println(stateFlow.GetHandler(common.ACTIVITY_STATE_EDIT).Arraignment(120981321, common.ACTIVITY_STATE_EDIT))
+	fmt.Println(stateFlow.GetHandler(common.ACTIVITY_STATE_ARRAIGNMENT).CheckPass(120981321, common.ACTIVITY_STATE_ARRAIGNMENT))
+	fmt.Println(stateFlow.GetHandler(common.ACTIVITY_STATE_PASS).Doing(120981321, common.ACTIVITY_STATE_PASS))
+	fmt.Println(stateFlow.GetHandler(common.ACTIVITY_STATE_EDIT).CheckPass(120981321, common.ACTIVITY_STATE_EDIT))
 }
